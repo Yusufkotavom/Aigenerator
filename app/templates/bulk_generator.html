@@ -1,0 +1,768 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Bulk Content Generator{% endblock %}
+
+{% block head %}
+<style>
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.step::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #374151;
+    z-index: 1;
+}
+
+.step:last-child::after {
+    display: none;
+}
+
+.step-number {
+    background: #374151;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.step.active .step-number {
+    background: #8b5cf6;
+}
+
+.step.completed .step-number {
+    background: #10b981;
+}
+
+.step-title {
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.step.active .step-title {
+    color: #8b5cf6;
+    font-weight: 600;
+}
+
+.step.completed .step-title {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.drag-drop-area {
+    border: 2px dashed #6b7280;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drag-drop-area.dragover {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.template-preview {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.field-mapping {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #ec4899);
+    transition: width 0.3s ease;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-8" x-data="bulkGenerator()">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Bulk Content Generator</h1>
+            <p class="text-gray-400">Generate hundreds of content pages from CSV data using AI-powered templates</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step" :class="{ 'active': currentStep === 1, 'completed': currentStep > 1 }">
+                <div class="step-number">1</div>
+                <div class="step-title">Choose Template</div>
+            </div>
+            <div class="step" :class="{ 'active': currentStep === 2, 'completed': currentStep > 2 }">
+                <div class="step-number">2</div>
+                <div class="step-title">Upload CSV</div>
+            </div>
+            <div class="step" :class="{ 'active': currentStep === 3, 'completed': currentStep > 3 }">
+                <div class="step-number">3</div>
+                <div class="step-title">Configure</div>
+            </div>
+            <div class="step" :class="{ 'active': currentStep === 4, 'completed': currentStep > 4 }">
+                <div class="step-number">4</div>
+                <div class="step-title">Generate</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="bg-white/5 backdrop-blur-lg rounded-xl p-8 border border-white/10">
+            
+            <!-- Step 1: Template Selection -->
+            <div x-show="currentStep === 1" x-transition>
+                <h2 class="text-2xl font-semibold mb-6">Step 1: Choose Content Template</h2>
+                
+                <!-- Template Categories -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button @click="selectedCategory = 'all'" 
+                                :class="selectedCategory === 'all' ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                class="px-4 py-2 rounded-lg transition-colors">
+                            All Templates
+                        </button>
+                        <template x-for="category in contentCategories" :key="category">
+                            <button @click="selectedCategory = category" 
+                                    :class="selectedCategory === category ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                    class="px-4 py-2 rounded-lg transition-colors"
+                                    x-text="category">
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Template Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <template x-for="template in filteredContentTemplates" :key="template.id">
+                        <div @click="selectTemplate(template)" 
+                             :class="selectedTemplate?.id === template.id ? 'ring-2 ring-purple-400 bg-purple-500/20' : 'hover:bg-white/10'"
+                             class="cursor-pointer p-6 rounded-xl border border-white/10 transition-all duration-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-sm bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full"
+                                      x-text="template.category"></span>
+                                <span x-show="selectedTemplate?.id === template.id" class="text-purple-400">
+                                    <i class="fas fa-check-circle"></i>
+                                </span>
+                            </div>
+                            <h3 class="font-semibold text-white mb-2" x-text="template.name"></h3>
+                            <p class="text-gray-400 text-sm mb-4" x-text="template.description"></p>
+                            <div class="text-xs text-gray-500">
+                                <span x-text="template.fields.length"></span> required fields
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Template Preview -->
+                <div x-show="selectedTemplate" x-transition class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Template Preview & Required Fields</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-md font-medium mb-2">Required CSV Fields:</h4>
+                            <div class="template-preview">
+                                <template x-for="field in selectedTemplate?.fields" :key="field">
+                                    <div class="field-mapping">
+                                        <span class="text-gray-300" x-text="field"></span>
+                                        <span class="text-gray-500 text-sm">Required</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-md font-medium mb-2">Template Purpose:</h4>
+                            <p class="text-gray-400 text-sm mb-4" x-text="selectedTemplate?.purpose"></p>
+                            <button @click="downloadCSVTemplate()" 
+                                    class="bg-blue-500/20 text-blue-300 py-2 px-4 rounded-lg hover:bg-blue-500/30 transition-colors">
+                                <i class="fas fa-download mr-2"></i>
+                                Download CSV Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button @click="nextStep()" 
+                            :disabled="!selectedTemplate"
+                            :class="!selectedTemplate ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-purple-500/25'"
+                            class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+                        Next: Upload CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: CSV Upload -->
+            <div x-show="currentStep === 2" x-transition>
+                <h2 class="text-2xl font-semibold mb-6">Step 2: Upload CSV Data</h2>
+                
+                <!-- File Upload Area -->
+                <div class="drag-drop-area mb-6" 
+                     @drop.prevent="handleFileDrop($event)"
+                     @dragover.prevent="$event.currentTarget.classList.add('dragover')"
+                     @dragleave.prevent="$event.currentTarget.classList.remove('dragover')"
+                     @click="$refs.csvFileInput.click()">
+                    
+                    <template x-if="!csvData">
+                        <div>
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-300 mb-2">Upload CSV File</h3>
+                            <p class="text-gray-400 mb-4">Drag and drop your CSV file here, or click to select</p>
+                            <div class="text-sm text-gray-500">
+                                Supported format: .csv files up to 10MB
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="csvData">
+                        <div>
+                            <i class="fas fa-file-csv text-4xl text-green-400 mb-4"></i>
+                            <h3 class="text-lg font-semibold text-green-400 mb-2">CSV Uploaded Successfully</h3>
+                            <p class="text-gray-400 mb-2">
+                                <span x-text="csvData.row_count"></span> rows found
+                            </p>
+                            <button @click="clearCSV()" class="text-red-400 hover:text-red-300 text-sm">
+                                <i class="fas fa-trash mr-1"></i>Remove file
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <input type="file" 
+                       x-ref="csvFileInput" 
+                       @change="handleFileSelect($event)"
+                       accept=".csv"
+                       class="hidden">
+
+                <!-- CSV Preview -->
+                <div x-show="csvData && csvData.preview" x-transition class="mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Data Preview (First 3 rows)</h3>
+                    <div class="template-preview">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-white/10">
+                                        <template x-for="field in Object.keys(csvData.preview[0] || {})" :key="field">
+                                            <th class="text-left py-2 px-3 text-gray-300" x-text="field"></th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="row in csvData.preview" :key="row">
+                                        <tr class="border-b border-white/5">
+                                            <template x-for="value in Object.values(row)" :key="value">
+                                                <td class="py-2 px-3 text-gray-400" x-text="value"></td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validation Results -->
+                <div x-show="csvValidation && !csvValidation.success" x-transition class="mb-6">
+                    <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                        <h4 class="text-red-400 font-semibold mb-2">Validation Errors</h4>
+                        <p class="text-red-300 text-sm" x-text="csvValidation.error"></p>
+                        
+                        <template x-if="csvValidation.missing_fields">
+                            <div class="mt-4">
+                                <p class="text-red-300 text-sm mb-2">Missing required fields:</p>
+                                <ul class="text-red-300 text-sm ml-4">
+                                    <template x-for="field in csvValidation.missing_fields" :key="field">
+                                        <li x-text="'• ' + field"></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button @click="previousStep()" 
+                            class="bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-700 transition-all duration-300">
+                        Previous
+                    </button>
+                    <button @click="nextStep()" 
+                            :disabled="!csvData || (csvValidation && !csvValidation.success)"
+                            :class="(!csvData || (csvValidation && !csvValidation.success)) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-purple-500/25'"
+                            class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300">
+                        Next: Configure
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Configuration -->
+            <div x-show="currentStep === 3" x-transition>
+                <h2 class="text-2xl font-semibold mb-6">Step 3: Configure Generation</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div class="space-y-6">
+                        <!-- AI Model Selection -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">AI Model</h3>
+                            <div class="grid grid-cols-1 gap-3">
+                                {% for model in models %}
+                                <div @click="selectedModel = '{{ model.id }}'" 
+                                     :class="selectedModel === '{{ model.id }}' ? 'bg-purple-500/30 border-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'"
+                                     class="p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 flex items-center">
+                                    <div class="{{ model.color }} p-2 rounded-lg mr-4">
+                                        <i class="{{ model.icon }} text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-white">{{ model.name }}</h4>
+                                        <p class="text-sm text-gray-300">{{ model.description }}</p>
+                                    </div>
+                                    <span x-show="selectedModel === '{{ model.id }}'" class="text-purple-400">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Output Format -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Output Format</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button @click="outputFormat = 'html'" 
+                                        :class="outputFormat === 'html' ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                        class="p-3 rounded-lg transition-colors text-left">
+                                    <div class="font-semibold">HTML</div>
+                                    <div class="text-sm opacity-80">Complete HTML pages</div>
+                                </button>
+                                <button @click="outputFormat = 'wordpress'" 
+                                        :class="outputFormat === 'wordpress' ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                        class="p-3 rounded-lg transition-colors text-left">
+                                    <div class="font-semibold">WordPress</div>
+                                    <div class="text-sm opacity-80">WP post content</div>
+                                </button>
+                                <button @click="outputFormat = 'markdown'" 
+                                        :class="outputFormat === 'markdown' ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                        class="p-3 rounded-lg transition-colors text-left">
+                                    <div class="font-semibold">Markdown</div>
+                                    <div class="text-sm opacity-80">MD format</div>
+                                </button>
+                                <button @click="outputFormat = 'json'" 
+                                        :class="outputFormat === 'json' ? 'bg-purple-500 text-white' : 'bg-white/5 text-gray-300 hover:bg-white/10'"
+                                        class="p-3 rounded-lg transition-colors text-left">
+                                    <div class="font-semibold">JSON</div>
+                                    <div class="text-sm opacity-80">Structured data</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+                        <!-- AI Enhancement -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">AI Enhancement</h3>
+                            <div class="bg-white/5 p-4 rounded-lg">
+                                <label class="flex items-center">
+                                    <input type="checkbox" x-model="useAiEnhancement" class="mr-3">
+                                    <div>
+                                        <div class="font-medium text-white">Enhance with AI</div>
+                                        <div class="text-sm text-gray-400">Improve content quality and SEO optimization</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- API Key -->
+                        <div x-show="showApiKeyInput" x-transition>
+                            <h3 class="text-lg font-semibold mb-4">API Key (Optional)</h3>
+                            <input x-model="apiKey" 
+                                   type="password" 
+                                   placeholder="Enter API key for selected model..."
+                                   class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <p class="text-xs text-gray-400 mt-2">
+                                Leave empty to use demo mode
+                            </p>
+                        </div>
+
+                        <!-- Generation Summary -->
+                        <div class="bg-blue-500/20 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-300 mb-2">Generation Summary</h4>
+                            <div class="text-sm text-blue-200 space-y-1">
+                                <div>Template: <span x-text="selectedTemplate?.name"></span></div>
+                                <div>Rows to process: <span x-text="csvData?.row_count || 0"></span></div>
+                                <div>Output format: <span x-text="outputFormat"></span></div>
+                                <div>AI enhancement: <span x-text="useAiEnhancement ? 'Enabled' : 'Disabled'"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button @click="previousStep()" 
+                            class="bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-700 transition-all duration-300">
+                        Previous
+                    </button>
+                    <div class="space-x-3">
+                        <button @click="showApiKeyInput = !showApiKeyInput" 
+                                class="bg-white/5 text-gray-300 font-semibold py-3 px-6 rounded-xl hover:bg-white/10 transition-all duration-300">
+                            <i class="fas fa-key mr-2"></i>
+                            <span x-text="showApiKeyInput ? 'Hide API Settings' : 'Show API Settings'"></span>
+                        </button>
+                        <button @click="nextStep()" 
+                                class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-3 px-6 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300">
+                            Next: Generate
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Generation -->
+            <div x-show="currentStep === 4" x-transition>
+                <h2 class="text-2xl font-semibold mb-6">Step 4: Generate Content</h2>
+                
+                <template x-if="!isGenerating && !generationResults">
+                    <div class="text-center py-8">
+                        <i class="fas fa-rocket text-4xl text-purple-400 mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-4">Ready to Generate</h3>
+                        <p class="text-gray-400 mb-6">
+                            Generate <span x-text="csvData?.row_count || 0"></span> content files 
+                            using <span x-text="selectedTemplate?.name"></span> template
+                        </p>
+                        <div class="flex justify-center space-x-4">
+                            <button @click="previousStep()" 
+                                    class="bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-700 transition-all duration-300">
+                                Previous
+                            </button>
+                            <button @click="startGeneration()" 
+                                    class="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-4 px-8 rounded-xl hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+                                <i class="fas fa-magic mr-2"></i>
+                                Start Generation
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Generation Progress -->
+                <template x-if="isGenerating">
+                    <div class="text-center py-8">
+                        <div class="animate-pulse-slow mb-6">
+                            <i class="fas fa-cogs text-4xl text-purple-400"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Generating Content...</h3>
+                        <div class="progress-bar mb-4">
+                            <div class="progress-fill" :style="`width: ${generationProgress}%`"></div>
+                        </div>
+                        <p class="text-gray-400">
+                            Processing row <span x-text="currentProcessingRow"></span> of <span x-text="csvData?.row_count || 0"></span>
+                        </p>
+                    </div>
+                </template>
+
+                <!-- Generation Results -->
+                <template x-if="generationResults">
+                    <div>
+                        <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-6 mb-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-green-400 font-semibold text-lg mb-2">Generation Complete!</h3>
+                                    <div class="text-green-300 text-sm space-y-1">
+                                        <div>Total files: <span x-text="generationResults.summary.total_rows"></span></div>
+                                        <div>Successful: <span x-text="generationResults.summary.successful"></span></div>
+                                        <div>Failed: <span x-text="generationResults.summary.failed"></span></div>
+                                        <div>Success rate: <span x-text="Math.round(generationResults.summary.success_rate)"></span>%</div>
+                                    </div>
+                                </div>
+                                <button @click="downloadResults()" 
+                                        class="bg-green-500 text-white font-semibold py-3 px-6 rounded-xl hover:bg-green-600 transition-all duration-300">
+                                    <i class="fas fa-download mr-2"></i>
+                                    Download ZIP
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Results List -->
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            <template x-for="result in generationResults.results" :key="result.filename">
+                                <div class="bg-white/5 p-4 rounded-lg flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-white" x-text="result.filename"></div>
+                                        <div class="text-sm text-gray-400">
+                                            <span x-text="result.content_length"></span> characters
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="flex justify-between mt-8">
+                            <button @click="resetGenerator()" 
+                                    class="bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-700 transition-all duration-300">
+                                Start New Generation
+                            </button>
+                            <button @click="downloadResults()" 
+                                    class="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 px-6 rounded-xl hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300">
+                                <i class="fas fa-download mr-2"></i>
+                                Download All Files
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function bulkGenerator() {
+    return {
+        // State
+        currentStep: 1,
+        selectedTemplate: null,
+        selectedCategory: 'all',
+        csvData: null,
+        csvValidation: null,
+        selectedModel: 'gemini-flash',
+        outputFormat: 'wordpress',
+        useAiEnhancement: false,
+        showApiKeyInput: false,
+        apiKey: '',
+        isGenerating: false,
+        generationProgress: 0,
+        currentProcessingRow: 0,
+        generationResults: null,
+
+        // Data
+        contentTemplates: {{ content_templates | tojson }},
+        contentCategories: {{ content_categories | tojson }},
+
+        // Initialize
+        init() {
+            console.log('Bulk generator initialized');
+        },
+
+        // Computed
+        get filteredContentTemplates() {
+            if (this.selectedCategory === 'all') {
+                return this.contentTemplates;
+            }
+            return this.contentTemplates.filter(t => t.category === this.selectedCategory);
+        },
+
+        // Step navigation
+        nextStep() {
+            if (this.currentStep < 4) {
+                this.currentStep++;
+            }
+        },
+
+        previousStep() {
+            if (this.currentStep > 1) {
+                this.currentStep--;
+            }
+        },
+
+        // Template selection
+        selectTemplate(template) {
+            this.selectedTemplate = template;
+        },
+
+        downloadCSVTemplate() {
+            if (!this.selectedTemplate) return;
+            
+            const headers = this.selectedTemplate.fields.join(',');
+            const exampleRow = this.selectedTemplate.fields.map(field => `example_${field}`).join(',');
+            const csvContent = `${headers}\n${exampleRow}`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${this.selectedTemplate.id}_template.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        },
+
+        // CSV handling
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.processCSVFile(file);
+            }
+        },
+
+        handleFileDrop(event) {
+            event.currentTarget.classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file && file.type === 'text/csv') {
+                this.processCSVFile(file);
+            }
+        },
+
+        async processCSVFile(file) {
+            try {
+                const content = await file.text();
+                
+                const response = await fetch('/api/bulk/validate-csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        csv_content: content,
+                        template_id: this.selectedTemplate.id
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.csvData = result;
+                    this.csvValidation = { success: true };
+                    AI.showToast('CSV file validated successfully!');
+                } else {
+                    this.csvValidation = result;
+                    AI.showToast(result.error, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error processing CSV:', error);
+                AI.showToast('Error processing CSV file', 'error');
+            }
+        },
+
+        clearCSV() {
+            this.csvData = null;
+            this.csvValidation = null;
+            this.$refs.csvFileInput.value = '';
+        },
+
+        // Generation
+        async startGeneration() {
+            this.isGenerating = true;
+            this.generationProgress = 0;
+            this.currentProcessingRow = 0;
+
+            try {
+                const response = await fetch('/api/bulk/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        csv_data: this.csvData.data,
+                        template_id: this.selectedTemplate.id,
+                        model_id: this.selectedModel,
+                        output_format: this.outputFormat,
+                        use_ai_enhancement: this.useAiEnhancement,
+                        api_key: this.apiKey
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.generationResults = result;
+                    AI.showToast('Content generation completed!');
+                } else {
+                    AI.showToast(result.error, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error generating content:', error);
+                AI.showToast('Error generating content', 'error');
+            } finally {
+                this.isGenerating = false;
+                this.generationProgress = 100;
+            }
+        },
+
+        async downloadResults() {
+            if (!this.generationResults) return;
+
+            try {
+                const response = await fetch('/api/bulk/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        results: this.generationResults.results,
+                        summary: this.generationResults.summary,
+                        template_name: this.selectedTemplate.name
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `bulk_content_${Date.now()}.zip`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+                
+            } catch (error) {
+                console.error('Error downloading results:', error);
+                AI.showToast('Error downloading files', 'error');
+            }
+        },
+
+        resetGenerator() {
+            this.currentStep = 1;
+            this.selectedTemplate = null;
+            this.csvData = null;
+            this.csvValidation = null;
+            this.generationResults = null;
+            this.isGenerating = false;
+            this.generationProgress = 0;
+        }
+    }
+}
+</script>
+{% endblock %}
