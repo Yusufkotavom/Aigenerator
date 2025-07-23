@@ -3,6 +3,11 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from app.models.ai_models import get_all_models, get_model_by_id
 from app.models.prompts import get_all_templates, get_template_categories, get_template_by_id
+from app.models.content_templates import (
+    get_all_content_templates, 
+    get_content_template_categories,
+    get_content_template_by_id
+)
 
 main_bp = Blueprint('main', __name__)
 
@@ -35,6 +40,18 @@ def generator():
                          categories=categories,
                          selected_model=selected_model)
 
+@main_bp.route('/bulk-generator')
+def bulk_generator():
+    """Bulk Content Generator page"""
+    models = get_all_models()
+    content_templates = [template.to_dict() for template in get_all_content_templates()]
+    content_categories = get_content_template_categories()
+    
+    return render_template('bulk_generator.html',
+                         models=models,
+                         content_templates=content_templates,
+                         content_categories=content_categories)
+
 @main_bp.route('/templates')
 def templates():
     """Template library page"""
@@ -53,6 +70,24 @@ def templates():
                          categories=categories,
                          selected_category=category_filter)
 
+@main_bp.route('/content-templates')
+def content_templates():
+    """Content template library page"""
+    all_templates = get_all_content_templates()
+    categories = get_content_template_categories()
+    
+    # Filter by category if specified
+    category_filter = request.args.get('category')
+    if category_filter:
+        filtered_templates = [t for t in all_templates if t.category == category_filter]
+    else:
+        filtered_templates = all_templates
+    
+    return render_template('content_templates.html',
+                         templates=filtered_templates,
+                         categories=categories,
+                         selected_category=category_filter)
+
 @main_bp.route('/template/<template_id>')
 def template_detail(template_id):
     """Template detail page"""
@@ -62,6 +97,16 @@ def template_detail(template_id):
         return redirect(url_for('main.templates'))
     
     return render_template('template_detail.html', template=template)
+
+@main_bp.route('/content-template/<template_id>')
+def content_template_detail(template_id):
+    """Content template detail page"""
+    template = get_content_template_by_id(template_id)
+    if not template:
+        flash('Content template tidak ditemukan', 'error')
+        return redirect(url_for('main.content_templates'))
+    
+    return render_template('content_template_detail.html', template=template)
 
 @main_bp.route('/models')
 def models():

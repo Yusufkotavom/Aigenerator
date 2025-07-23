@@ -1,11 +1,13 @@
 """API views for handling AJAX requests and AI generation"""
 
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, send_file
 from app.utils.ai_client import ai_client
 from app.models.ai_models import get_model_by_id
 from app.models.prompts import get_template_by_id, search_templates
+from app.utils.bulk_generator import bulk_generator
 import datetime
 import uuid
+import io
 
 api_bp = Blueprint('api', __name__)
 
@@ -95,6 +97,114 @@ def generate():
             session.modified = True
         
         return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# Bulk Generation Endpoints
+@api_bp.route('/bulk/validate-csv', methods=['POST'])
+def validate_csv():
+    """Validate CSV data against template requirements"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'csv_content' not in data or 'template_id' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Missing required fields: csv_content and template_id'
+            }), 400
+        
+        csv_content = data['csv_content']
+        template_id = data['template_id']
+        
+        result = bulk_generator.process_csv_data(csv_content, template_id)
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@api_bp.route('/bulk/generate', methods=['POST'])
+def bulk_generate():
+    """Generate bulk content from CSV data"""
+    try:
+        data = request.get_json()
+        
+        required_fields = ['csv_data', 'template_id', 'model_id']
+        if not data or not all(field in data for field in required_fields):
+            return jsonify({
+                'success': False,
+                'error': f'Missing required fields: {", ".join(required_fields)}'
+            }), 400
+        
+        csv_data = data['csv_data']
+        template_id = data['template_id']
+        model_id = data['model_id']
+        output_format = data.get('output_format', 'html')
+        use_ai_enhancement = data.get('use_ai_enhancement', False)
+        api_key = data.get('api_key')
+        
+        if not csv_data:
+            return jsonify({
+                'success': False,
+                'error': 'CSV data is empty'
+            }), 400
+        
+        result = bulk_generator.generate_bulk_content(
+            csv_data=csv_data,
+            template_id=template_id,
+            model_id=model_id,
+            output_format=output_format,
+            use_ai_enhancement=use_ai_enhancement,
+            api_key=api_key
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@api_bp.route('/bulk/download', methods=['POST'])
+def bulk_download():
+    """Download bulk generation results as ZIP"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'results' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Missing results data'
+            }), 400
+        
+        results = data['results']
+        summary = data.get('summary', {})
+        template_name = data.get('template_name', 'unknown')
+        
+        # Create ZIP package
+        zip_data = bulk_generator.create_download_package(
+            results=results,
+            summary=summary,
+            template_name=template_name
+        )
+        
+        # Create response
+        zip_file = io.BytesIO(zip_data)
+        zip_file.seek(0)
+        
+        return send_file(
+            zip_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=f'bulk_content_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
+        )
         
     except Exception as e:
         return jsonify({

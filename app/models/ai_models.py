@@ -52,6 +52,32 @@ AVAILABLE_MODELS = [
         context_length=32768
     ),
     AIModel(
+        model_id='gemini-pro',
+        name='Gemini Pro',
+        provider='Google',
+        description='Google Gemini Pro - Advanced reasoning',
+        model_type='Chat Completion',
+        endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+        model_name='gemini-pro',
+        icon='fas fa-google',
+        color='bg-blue-500',
+        rate_limit='60 requests/minute',
+        context_length=32768
+    ),
+    AIModel(
+        model_id='gemini-flash',
+        name='Gemini 1.5 Flash',
+        provider='Google',
+        description='Google Gemini Flash - Fast & efficient',
+        model_type='Chat Completion',
+        endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+        model_name='gemini-1.5-flash',
+        icon='fas fa-bolt',
+        color='bg-yellow-500',
+        rate_limit='1500 requests/day',
+        context_length=1048576
+    ),
+    AIModel(
         model_id='huggingface-gpt2',
         name='GPT-2 Medium',
         provider='HuggingFace',
@@ -60,7 +86,7 @@ AVAILABLE_MODELS = [
         endpoint='https://api-inference.huggingface.co/models/gpt2-medium',
         model_name='gpt2-medium',
         icon='fas fa-brain',
-        color='bg-yellow-500',
+        color='bg-yellow-600',
         rate_limit='1000 requests/month',
         context_length=1024
     ),
@@ -86,9 +112,22 @@ AVAILABLE_MODELS = [
         endpoint='https://api.openai.com/v1/chat/completions',
         model_name='gpt-3.5-turbo',
         icon='fas fa-magic',
-        color='bg-blue-500',
+        color='bg-blue-600',
         rate_limit='3 requests/minute (free)',
         context_length=4096
+    ),
+    AIModel(
+        model_id='cohere-command',
+        name='Command R+',
+        provider='Cohere',
+        description='Cohere Command R+ model',
+        model_type='Chat Completion',
+        endpoint='https://api.cohere.ai/v1/chat',
+        model_name='command-r-plus',
+        icon='fas fa-comments',
+        color='bg-purple-500',
+        rate_limit='Free trial available',
+        context_length=128000
     )
 ]
 

@@ -1,401 +1,412 @@
-# 🤖 AI Generator - Multi Model Platform
+# AI Bulk Content Generator 🚀
 
-**Platform AI Generator modern dengan dukungan berbagai model AI gratis** menggunakan Python Flask, Jinja2 templates, dan Tailwind CSS.
+Platform AI Generator modern dengan fokus pada **Bulk Content Generation** untuk WordPress. Generate ratusan halaman konten berkualitas dari data CSV menggunakan multiple AI models.
 
-![AI Generator](https://via.placeholder.com/800x400/8b5cf6/ffffff?text=AI+Generator+Platform)
+![AI Generator](https://img.shields.io/badge/AI-Generator-purple?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python)
+![Flask](https://img.shields.io/badge/Flask-2.3+-green?style=for-the-badge&logo=flask)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge)
 
 ## ✨ Fitur Utama
 
-- 🎯 **Multi-Model Support**: Groq, HuggingFace, OpenAI, Cohere
-- 🆓 **Free Tier Focus**: Semua model mendukung tier gratis
-- 🎨 **Modern UI**: Glassmorphism dengan Tailwind CSS
-- 📱 **Responsive Design**: Optimal di desktop dan mobile
-- 🔧 **Template System**: Jinja2 modular templates
-- 📋 **Template Prompts**: 7+ prompt siap pakai
-- 💾 **Session Storage**: History tersimpan dalam session
-- 🚀 **Real-time Response**: Interface yang responsif
+### 🎯 Bulk Content Generator
+- **CSV Upload**: Upload file CSV dengan data bisnis/produk
+- **7+ Template HTML**: Template profesional untuk berbagai industri
+- **WordPress Ready**: Output siap upload ke WordPress
+- **Multiple Formats**: HTML, WordPress, Markdown, JSON
+- **AI Enhancement**: Tingkatkan kualitas konten dengan AI
+- **ZIP Download**: Download semua file dalam satu paket
 
-## 🏗️ Arsitektur Project
+### 🤖 AI Models Terintegrasi
+- **Google Gemini Pro & Flash**: Model terbaru Google dengan context 1M+ tokens
+- **Groq Llama 3.1 70B**: Super fast inference
+- **OpenAI GPT-3.5 Turbo**: Reliable dan powerful
+- **HuggingFace Models**: GPT-2, FLAN-T5 gratis
+- **Cohere Command R+**: Advanced reasoning
 
-```
-ai-generator/
-├── app/                          # Main Flask application
-│   ├── __init__.py              # App factory
-│   ├── models/                  # Data models
-│   │   ├── ai_models.py         # AI model configurations
-│   │   └── prompts.py           # Prompt templates
-│   ├── views/                   # Route handlers
-│   │   ├── main.py              # Main routes
-│   │   └── api.py               # API endpoints
-│   ├── utils/                   # Utilities
-│   │   └── ai_client.py         # AI API client
-│   ├── templates/               # Jinja2 templates
-│   │   ├── layouts/             # Base layouts
-│   │   ├── components/          # Reusable components
-│   │   ├── index.html           # Home page
-│   │   ├── generator.html       # Main generator
-│   │   └── templates.html       # Template library
-│   └── static/                  # Static assets
-│       ├── css/style.css        # Custom styles
-│       └── js/app.js            # JavaScript utilities
-├── requirements.txt             # Python dependencies
-├── .env.example                 # Environment template
-└── run.py                      # Application entry point
-```
+### 📝 Content Templates
+- **Business Landing Pages**: Professional business presentations
+- **Product Showcases**: E-commerce product pages
+- **Blog Articles**: SEO-optimized blog content
+- **Restaurant Menus**: Appetizing menu displays
+- **Real Estate Listings**: Property showcases
+- **Event Landing Pages**: Event promotion pages
+- **Portfolio Showcases**: Creative work presentations
 
-## 🚀 Model AI yang Didukung
+## 🚀 Quick Start
 
-| Provider | Model | Type | Free Tier | Setup |
-|----------|-------|------|-----------|-------|
-| **Groq** | Llama 3.1 70B | Chat | ✅ 30 req/min | [Get key](https://console.groq.com/) |
-| **HuggingFace** | GPT-2, FLAN-T5 | Text Gen | ✅ 1000 req/month | [Get token](https://huggingface.co/settings/tokens) |
-| **OpenAI** | GPT-3.5 Turbo | Chat | ✅ $5 trial | [Get key](https://platform.openai.com/api-keys) |
-| **Cohere** | Command | Chat | ✅ Free trial | [Get key](https://dashboard.cohere.ai/) |
+### Prerequisites
+- Python 3.8+
+- pip package manager
 
-## 📋 Prerequisites
+### Installation
 
-### Python 3.8+
+1. **Clone Repository**
 ```bash
-python --version  # 3.8 atau lebih baru
-pip --version     # package installer
+git clone https://github.com/your-username/ai-bulk-generator.git
+cd ai-bulk-generator
 ```
 
-## 🛠️ Quick Start
-
-### 1. Clone & Setup
+2. **Install Dependencies**
 ```bash
-git clone https://github.com/your-username/ai-generator.git
-cd ai-generator
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Environment Configuration
+3. **Environment Setup**
 ```bash
-# Copy environment template
 cp .env.example .env
-
-# Edit .env file (optional - API keys)
-nano .env
+# Edit .env file dengan API keys (opsional)
 ```
 
-### 3. Run Application
+4. **Run Application**
 ```bash
-# Development server
 python run.py
-
-# Production dengan Gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
 ```
 
-### 4. Open Browser
+5. **Access Application**
 ```
 http://localhost:5000
 ```
 
-## 🔑 Setup API Keys (Optional)
+## 📊 Bulk Generation Workflow
 
-### Metode 1: Environment Variables
-```bash
-export GROQ_API_KEY="gsk_your_groq_key"
-export HUGGINGFACE_API_KEY="hf_your_token"
-export OPENAI_API_KEY="sk_your_openai_key"
+### Step 1: Prepare CSV Data
+Create CSV file dengan field yang sesuai template:
+
+```csv
+business_name,tagline,description,cta_text,cta_link,hero_image,...
+"Tech Startup","Innovation First","Leading technology solutions","Get Started","/contact","hero1.jpg",...
+"Local Cafe","Fresh & Tasty","Best coffee in town","Order Now","/menu","hero2.jpg",...
 ```
 
-### Metode 2: .env File
-```env
-GROQ_API_KEY=gsk_your_groq_key_here
-HUGGINGFACE_API_KEY=hf_your_token_here
-OPENAI_API_KEY=sk_your_openai_key_here
+### Step 2: Upload & Validate
+- Upload CSV file via drag & drop
+- System validates required fields
+- Preview data untuk memastikan format benar
+
+### Step 3: Configure Generation
+- Pilih AI model (Gemini Flash recommended)
+- Pilih output format (WordPress untuk blog)
+- Enable AI enhancement untuk kualitas lebih baik
+- Input API key atau gunakan demo mode
+
+### Step 4: Generate & Download
+- Generate ratusan file secara batch
+- Download ZIP berisi semua file
+- Upload langsung ke WordPress
+
+## 🏗️ Template Structure
+
+### Business Landing Template
+```html
+<!-- Hero Section dengan dynamic content -->
+<section class="hero-section">
+    <h1>{business_name}</h1>
+    <p>{tagline}</p>
+    <p>{description}</p>
+    <a href="{cta_link}">{cta_text}</a>
+</section>
+
+<!-- Services Section -->
+<section class="services-section">
+    <!-- Dynamic service cards -->
+</section>
 ```
 
-### Metode 3: Web Interface
-- Buka halaman Generator
-- Klik "Show API Settings"
-- Masukkan API key secara manual
+**Required Fields**: 21 fields
+- `business_name`, `tagline`, `description`
+- `cta_text`, `cta_link`, `hero_image`
+- `service1_title`, `service1_description`, `service1_image`
+- Dan lainnya...
 
-## 💡 Cara Penggunaan
-
-### 1. Pilih Model AI
-- Buka halaman Generator
-- Pilih model dari card yang tersedia
-- Info model akan tampil di sidebar
-
-### 2. Gunakan Template atau Custom Prompt
-```python
-# Template examples:
-- Creative Writing: Cerita pendek kreatif
-- Code Helper: Bantuan programming
-- Business Analysis: Analisis ide bisnis
-- Problem Solving: Pemecahan masalah sistematis
+### E-commerce Product Template
+```html
+<!-- Product showcase dengan specifications -->
+<div class="product-showcase">
+    <div class="product-gallery">
+        <img src="{product_image}" alt="{product_name}" />
+    </div>
+    <div class="product-info">
+        <h1>{product_name}</h1>
+        <p class="price">{price}</p>
+        <div class="rating">{rating} ⭐</div>
+    </div>
+</div>
 ```
 
-### 3. Atur Parameter
-- **Temperature**: 0.0 (conservative) - 1.0 (creative)
-- **Max Tokens**: 50 - 2000 (panjang response)
-- **Top P**: 0.0 (focused) - 1.0 (diverse)
+**Required Fields**: 24 fields
+- `product_name`, `price`, `rating`, `description`
+- `product_image`, `image2`, `image3`, `image4`
+- `feature1`, `feature2`, `feature3`, `feature4`
+- Dan lainnya...
 
-### 4. Generate & Export
-- Klik "Generate AI Response"
-- Copy hasil ke clipboard
-- View generation history
-
-## 🎨 Template System
-
-### Struktur Template Jinja2
-```jinja2
-{% extends "layouts/base.html" %}
-
-{% block title %}Page Title{% endblock %}
-
-{% block content %}
-<!-- Page content -->
-{% include 'components/navbar.html' %}
-{% endblock %}
-
-{% block scripts %}
-<script>
-// Page-specific JavaScript
-</script>
-{% endblock %}
-```
-
-### Komponen yang Tersedia
-- `layouts/base.html` - Base layout
-- `components/navbar.html` - Navigation bar
-- `components/footer.html` - Footer
-- `components/flash_messages.html` - Notifications
-
-## 🔧 Development
-
-### Folder Structure Breakdown
-```
-app/
-├── models/          # Data structures & configurations
-├── views/           # Route handlers (like controllers)
-├── utils/           # Helper functions & API clients
-├── templates/       # Jinja2 HTML templates
-│   ├── layouts/     # Base templates
-│   └── components/  # Reusable template parts
-└── static/          # CSS, JS, images
-```
-
-### Adding New AI Model
-```python
-# app/models/ai_models.py
-new_model = AIModel(
-    model_id='provider-model',
-    name='Model Name',
-    provider='Provider',
-    description='Model description',
-    model_type='Chat Completion',
-    endpoint='https://api.provider.com/v1/chat',
-    model_name='model-name',
-    icon='fas fa-icon',
-    color='bg-color-500'
-)
-
-AVAILABLE_MODELS.append(new_model)
-```
-
-### Adding New Template
-```python
-# app/models/prompts.py
-new_template = PromptTemplate(
-    template_id='unique-id',
-    name='Template Name',
-    description='Template description',
-    prompt='Your prompt template here...',
-    category='Category',
-    tags=['tag1', 'tag2']
-)
-
-PROMPT_TEMPLATES.append(new_template)
-```
-
-## 🐳 Docker Deployment
-
-### Dockerfile
-```dockerfile
-FROM python:3.9-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 5000
-
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
-```
-
-### Docker Compose
-```yaml
-version: '3.8'
-services:
-  ai-generator:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - DEBUG=False
-      - SECRET_KEY=your-secret-key
-    volumes:
-      - .:/app
-```
-
-## 🚀 Production Deployment
-
-### Using Gunicorn
-```bash
-# Install Gunicorn
-pip install gunicorn
-
-# Run with multiple workers
-gunicorn -w 4 -b 0.0.0.0:5000 run:app
-
-# With process management
-gunicorn -w 4 -b 0.0.0.0:5000 --daemon --pid /var/run/gunicorn.pid run:app
-```
-
-### Nginx Configuration
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    location /static {
-        alias /path/to/your/app/static;
-    }
-}
-```
-
-## 🛡️ Security & Best Practices
+## 🔧 API Configuration
 
 ### Environment Variables
 ```bash
-# Never commit these to version control
-SECRET_KEY=your-very-secret-key-here
-DEBUG=False
-GROQ_API_KEY=your-api-key
+# AI API Keys (Optional)
+GROQ_API_KEY=gsk_your_groq_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=sk_your_openai_api_key_here
+HUGGINGFACE_API_KEY=hf_your_token_here
+COHERE_API_KEY=your_cohere_api_key_here
+
+# Flask Settings
+DEBUG=True
+SECRET_KEY=your-secret-key-here
 ```
+
+### API Endpoints
+```bash
+# Bulk Generation
+POST /api/bulk/validate-csv    # Validate CSV data
+POST /api/bulk/generate        # Generate bulk content
+POST /api/bulk/download        # Download ZIP package
+
+# Single Generation
+POST /api/generate             # Single AI generation
+GET  /api/models              # Available AI models
+GET  /api/templates/search    # Search templates
+```
+
+## 💡 Use Cases
+
+### 1. E-commerce Bulk Pages
+Generate product pages untuk ratusan produk:
+```csv
+product_name,price,description,image_url,...
+"Smartphone X","$299","Latest smartphone","phone1.jpg",...
+"Laptop Pro","$899","Professional laptop","laptop1.jpg",...
+```
+
+### 2. Real Estate Listings
+Generate property listing pages:
+```csv
+property_title,price,bedrooms,bathrooms,address,...
+"Modern Villa","$450,000","4","3","123 Oak Street",...
+"City Apartment","$200,000","2","1","456 Main Ave",...
+```
+
+### 3. Restaurant Menus
+Generate menu pages untuk multiple outlets:
+```csv
+restaurant_name,cuisine_type,appetizer1_name,main1_name,...
+"Pizza Palace","Italian","Bruschetta","Margherita Pizza",...
+"Sushi Master","Japanese","Edamame","Salmon Sashimi",...
+```
+
+### 4. Business Directories
+Generate landing pages untuk multiple businesses:
+```csv
+business_name,industry,services,contact_info,...
+"Tech Solutions","IT","Web Development","tech@email.com",...
+"Design Studio","Creative","Branding","design@email.com",...
+```
+
+## 🎨 Output Formats
+
+### WordPress Format
+```html
+<!-- wp:html -->
+<div class="business-landing">
+    <!-- Template content -->
+</div>
+<!-- /wp:html -->
+
+<!-- wp:html -->
+<style>
+/* Template CSS */
+</style>
+<!-- /wp:html -->
+```
+
+### HTML Format
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generated Content</title>
+    <style>/* Template CSS */</style>
+</head>
+<body>
+    <!-- Template content -->
+    <script>/* Template JS */</script>
+</body>
+</html>
+```
+
+### Markdown Format
+```markdown
+# Business Name
+
+**Tagline**: Innovation First
+
+**Description**: Leading technology solutions...
+
+## Services
+- Service 1: Description
+- Service 2: Description
+
+[Get Started](/contact)
+```
+
+### JSON Format
+```json
+{
+  "content": {
+    "html": "<!-- Template HTML -->",
+    "css": "/* Template CSS */",
+    "javascript": "/* Template JS */"
+  },
+  "data": {
+    "business_name": "Tech Startup",
+    "tagline": "Innovation First"
+  },
+  "meta": {
+    "generated_at": "2024-01-01T00:00:00",
+    "format": "json"
+  }
+}
+```
+
+## 🔒 Security & Best Practices
+
+### API Key Security
+- Gunakan environment variables untuk API keys
+- Jangan commit API keys ke version control
+- Rotasi API keys secara berkala
+
+### Input Validation
+- CSV data divalidasi sebelum processing
+- XSS protection pada user input
+- File upload size limits
 
 ### Rate Limiting
-- Implement rate limiting for API endpoints
-- Use Redis for distributed rate limiting
-- Monitor API usage per provider
+- Respect AI provider rate limits
+- Implement exponential backoff
+- Queue system untuk bulk processing
 
-### CORS & Security Headers
-```python
-# Already configured in app/__init__.py
-CORS(app)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-```
+## 🚀 Deployment
 
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**1. ModuleNotFoundError**
+### Local Development
 ```bash
-# Ensure virtual environment is activated
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-**2. Template Not Found**
-```bash
-# Check template paths in app/views/
-# Ensure templates are in app/templates/
-```
-
-**3. API Key Errors**
-```bash
-# Check environment variables
-echo $GROQ_API_KEY
-
-# Or use web interface for manual entry
-```
-
-**4. CORS Issues**
-```python
-# Already handled in app/__init__.py
-# Ensure CORS is properly configured
-```
-
-### Debug Mode
-```bash
-export DEBUG=True
 python run.py
+# Access: http://localhost:5000
 ```
 
-## 📊 Performance Tips
+### Production with Gunicorn
+```bash
+gunicorn -w 4 -b 0.0.0.0:5000 run:app
+```
 
-### Optimization
-- Use Redis for session storage in production
-- Implement request caching for API responses
-- Use CDN for static assets
-- Enable gzip compression
+### Docker Deployment
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 5000
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
+```
+
+```bash
+docker build -t ai-generator .
+docker run -p 5000:5000 ai-generator
+```
+
+### Environment Configuration
+```bash
+# Production settings
+DEBUG=False
+SECRET_KEY=your-production-secret-key
+CORS_ORIGINS=yourdomain.com
+```
+
+## 📈 Performance Optimization
+
+### Bulk Processing
+- Parallel processing untuk multiple records
+- Streaming responses untuk large datasets
+- Progress tracking untuk user feedback
+
+### Caching
+- Template caching untuk faster rendering
+- AI response caching untuk repeated content
+- Static asset optimization
 
 ### Monitoring
-- Log API response times
-- Monitor error rates
-- Track model usage statistics
-- Set up health checks
+- Generation success/failure rates
+- API response times
+- Error tracking dan logging
 
 ## 🤝 Contributing
 
-### Development Workflow
+### Development Setup
 1. Fork repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes with proper tests
-4. Commit: `git commit -m 'Add amazing feature'`
-5. Push: `git push origin feature/amazing-feature`
-6. Create Pull Request
+2. Create feature branch
+3. Install development dependencies
+4. Make changes
+5. Test thoroughly
+6. Submit pull request
 
-### Code Style
-- Follow PEP 8 for Python
-- Use Black for code formatting
-- Add docstrings for functions
-- Include type hints where possible
+### Adding New Templates
+1. Create template in `app/models/content_templates.py`
+2. Define required fields
+3. Write HTML template dengan placeholders
+4. Add CSS styling
+5. Test dengan sample CSV data
+
+### Adding New AI Models
+1. Update `app/models/ai_models.py`
+2. Implement API client in `app/utils/ai_client.py`
+3. Add API key mapping
+4. Test integration
+5. Update documentation
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## 🆘 Support
 
-- [Flask](https://flask.palletsprojects.com/) - Web framework
-- [Jinja2](https://jinja.palletsprojects.com/) - Template engine
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [Alpine.js](https://alpinejs.dev/) - JavaScript framework
-- [Groq](https://groq.com/) - Fast AI inference
-- [HuggingFace](https://huggingface.co/) - AI model hub
+### Common Issues
 
-## 📞 Support
+**Q: CSV validation fails**
+A: Pastikan CSV memiliki semua required fields untuk template yang dipilih
 
-- 🐛 Bug reports: [Issues](https://github.com/your-username/ai-generator/issues)
-- 💬 Discussions: [Discussions](https://github.com/your-username/ai-generator/discussions)
+**Q: AI generation returns demo response**
+A: Set API key yang valid di environment variables atau input form
+
+**Q: Download ZIP empty**
+A: Check generation results - pastikan ada content yang berhasil di-generate
+
+**Q: WordPress format tidak ter-import**
+A: Gunakan WordPress import plugin atau copy-paste content manual
+
+### Get Help
 - 📧 Email: support@your-domain.com
+- 💬 GitHub Issues: [Create Issue](https://github.com/your-username/ai-bulk-generator/issues)
+- 📖 Documentation: [Wiki](https://github.com/your-username/ai-bulk-generator/wiki)
+
+## 🎯 Roadmap
+
+### Version 2.0
+- [ ] Advanced template editor
+- [ ] Custom field mapping
+- [ ] Batch API key management
+- [ ] Advanced AI parameters
+- [ ] Template marketplace
+
+### Version 2.1
+- [ ] WordPress plugin integration
+- [ ] Automatic content posting
+- [ ] SEO optimization tools
+- [ ] Analytics dashboard
+- [ ] Team collaboration features
 
 ---
 
-**Made with ❤️ using Python Flask + Jinja2**
+**Made with ❤️ for content creators and WordPress developers**
 
-⭐ **Star this repo if it helps you!**
+*Generate smarter, not harder with AI Bulk Content Generator*

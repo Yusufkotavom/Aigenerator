@@ -40,10 +40,14 @@ class AIClient:
         try:
             if model.provider == 'Groq':
                 return self._call_groq(model, prompt, temperature, max_tokens, top_p, api_key)
+            elif model.provider == 'Google':
+                return self._call_gemini(model, prompt, temperature, max_tokens, top_p, api_key)
             elif model.provider == 'HuggingFace':
                 return self._call_huggingface(model, prompt, temperature, max_tokens, top_p, api_key)
             elif model.provider == 'OpenAI':
                 return self._call_openai(model, prompt, temperature, max_tokens, top_p, api_key)
+            elif model.provider == 'Cohere':
+                return self._call_cohere(model, prompt, temperature, max_tokens, top_p, api_key)
             else:
                 return self._simulate_response(prompt, model)
                 
@@ -58,8 +62,10 @@ class AIClient:
         """Get API key from environment variables"""
         key_map = {
             'Groq': 'GROQ_API_KEY',
+            'Google': 'GEMINI_API_KEY',
             'HuggingFace': 'HUGGINGFACE_API_KEY',
-            'OpenAI': 'OPENAI_API_KEY'
+            'OpenAI': 'OPENAI_API_KEY',
+            'Cohere': 'COHERE_API_KEY'
         }
         return os.getenv(key_map.get(provider))
     
@@ -93,12 +99,71 @@ class AIClient:
                 'success': True,
                 'response': result['choices'][0]['message']['content'],
                 'model': model.name,
-                'provider': model.provider
+                'provider': model.provider,
+                'usage': result.get('usage', {})
             }
         else:
             return {
                 'success': False,
-                'error': f'Groq API error: {response.status_code}',
+                'error': f'Groq API error: {response.status_code} - {response.text}',
+                'response': None
+            }
+    
+    def _call_gemini(self, model, prompt: str, temperature: float,
+                    max_tokens: int, top_p: float, api_key: str) -> Dict[str, Any]:
+        """Call Google Gemini API"""
+        
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        
+        # Add API key to URL for Gemini
+        url = f"{model.endpoint}?key={api_key}"
+        
+        data = {
+            'contents': [
+                {
+                    'parts': [
+                        {
+                            'text': prompt
+                        }
+                    ]
+                }
+            ],
+            'generationConfig': {
+                'temperature': temperature,
+                'topP': top_p,
+                'maxOutputTokens': max_tokens,
+            }
+        }
+        
+        response = self.session.post(url, headers=headers, json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            # Extract text from Gemini response structure
+            if 'candidates' in result and len(result['candidates']) > 0:
+                candidate = result['candidates'][0]
+                if 'content' in candidate and 'parts' in candidate['content']:
+                    text = candidate['content']['parts'][0].get('text', '')
+                    return {
+                        'success': True,
+                        'response': text,
+                        'model': model.name,
+                        'provider': model.provider,
+                        'usage': result.get('usageMetadata', {})
+                    }
+            
+            return {
+                'success': False,
+                'error': 'No valid response from Gemini',
+                'response': None
+            }
+        else:
+            return {
+                'success': False,
+                'error': f'Gemini API error: {response.status_code} - {response.text}',
                 'response': None
             }
     
@@ -143,7 +208,7 @@ class AIClient:
         else:
             return {
                 'success': False,
-                'error': f'HuggingFace API error: {response.status_code}',
+                'error': f'HuggingFace API error: {response.status_code} - {response.text}',
                 'response': None
             }
     
@@ -177,12 +242,48 @@ class AIClient:
                 'success': True,
                 'response': result['choices'][0]['message']['content'],
                 'model': model.name,
-                'provider': model.provider
+                'provider': model.provider,
+                'usage': result.get('usage', {})
             }
         else:
             return {
                 'success': False,
-                'error': f'OpenAI API error: {response.status_code}',
+                'error': f'OpenAI API error: {response.status_code} - {response.text}',
+                'response': None
+            }
+    
+    def _call_cohere(self, model, prompt: str, temperature: float,
+                    max_tokens: int, top_p: float, api_key: str) -> Dict[str, Any]:
+        """Call Cohere API"""
+        
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+        
+        data = {
+            'model': model.model_name,
+            'message': prompt,
+            'temperature': temperature,
+            'max_tokens': max_tokens,
+            'p': top_p
+        }
+        
+        response = self.session.post(model.endpoint, headers=headers, json=data, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                'success': True,
+                'response': result['text'],
+                'model': model.name,
+                'provider': model.provider,
+                'usage': result.get('meta', {})
+            }
+        else:
+            return {
+                'success': False,
+                'error': f'Cohere API error: {response.status_code} - {response.text}',
                 'response': None
             }
     
