@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from "components/card.html" import render_card %}
+{% from "components/list.html" import render_list %}
+
+{% block title %}{{ title | default('Berita Terkini') }}{% endblock %}
+
+{% block header_class %}bg-dark text-white{% endblock %}
+
+{% block extra_css %}
+.breaking-news { background: linear-gradient(45deg, #dc3545, #fd7e14); animation: pulse 2s infinite; }
+.news-category { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+.news-meta { font-size: 0.9rem; color: #6c757d; }
+.trending-badge { background: #ff6b6b; }
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+{% endblock %}
+
+{% block content %}
+<!-- Breaking News Banner -->
+{% if breaking_news %}
+<div class="alert breaking-news text-white mb-4" role="alert">
+    <div class="d-flex align-items-center">
+        <strong class="me-3">🔴 BREAKING:</strong>
+        <div class="flex-grow-1">{{ breaking_news.title or breaking_news }}</div>
+        {% if breaking_news.url %}
+        <a href="{{ breaking_news.url | safe_url }}" class="btn btn-light btn-sm">Baca</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Featured News -->
+        {% if featured_news or (items and items[0]) %}
+        {% set featured = featured_news or items[0] %}
+        <div class="card mb-4 border-0 shadow">
+            {% if featured.image %}
+            <img src="{{ featured.image | safe_url }}" class="card-img-top" alt="{{ featured.title }}" style="height: 300px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    {% if featured.category %}
+                    <span class="badge bg-primary news-category">{{ featured.category }}</span>
+                    {% endif %}
+                    <small class="news-meta">
+                        {% if featured.date %}{{ featured.date }}{% endif %}
+                        {% if featured.author %} | {{ featured.author }}{% endif %}
+                    </small>
+                </div>
+                <h2 class="card-title">{{ featured.title }}</h2>
+                <p class="card-text">{{ featured.description or featured.content | truncate_words(50) }}</p>
+                {% if featured.url %}
+                <a href="{{ featured.url | safe_url }}" class="btn btn-primary">Baca Selengkapnya</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- News Grid -->
+        <div class="row">
+            {% for item in items[1:] if items|length > 1 %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if item.image %}
+                    <img src="{{ item.image | safe_url }}" class="card-img-top" alt="{{ item.title }}" style="height: 180px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            {% if item.category %}
+                            <span class="badge bg-secondary news-category">{{ item.category }}</span>
+                            {% endif %}
+                            {% if item.trending %}
+                            <span class="badge trending-badge">📈 Trending</span>
+                            {% endif %}
+                        </div>
+                        <h6 class="card-title">{{ item.title }}</h6>
+                        <p class="card-text small">{{ item.description or item.content | truncate_words(25) }}</p>
+                        <div class="news-meta">
+                            {% if item.date %}{{ item.date }}{% endif %}
+                            {% if item.author %} | {{ item.author }}{% endif %}
+                        </div>
+                    </div>
+                    {% if item.url %}
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{{ item.url | safe_url }}" class="btn btn-outline-primary btn-sm">Baca</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Latest News -->
+        {% if latest_news %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">📰 Berita Terbaru</h6>
+            </div>
+            <div class="card-body p-0">
+                {{ render_list(latest_news, style='simple') }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Popular News -->
+        {% if popular_news %}
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">🔥 Berita Popular</h6>
+            </div>
+            <div class="card-body p-0">
+                {{ render_list(popular_news, style='simple') }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Categories -->
+        {% if categories %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">📁 Kategori</h6>
+            </div>
+            <div class="card-body">
+                {{ render_list(categories, style='inline') }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Weather Widget (if weather data available) -->
+        {% if weather %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">🌤️ Cuaca</h6>
+            </div>
+            <div class="card-body text-center">
+                <h4>{{ weather.location | default('Jakarta') }}</h4>
+                <div class="display-4">{{ weather.temperature | default('28') }}°C</div>
+                <p class="mb-0">{{ weather.description | default('Cerah') }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Social Media -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h6 class="mb-0">📱 Ikuti Kami</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if social_media %}
+                        {% for platform, url in social_media.items() %}
+                        <a href="{{ url | safe_url }}" class="btn btn-outline-primary btn-sm">
+                            {{ platform | capitalize_words }}
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                    <a href="#" class="btn btn-outline-primary btn-sm">Facebook</a>
+                    <a href="#" class="btn btn-outline-info btn-sm">Twitter</a>
+                    <a href="#" class="btn btn-outline-danger btn-sm">Instagram</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

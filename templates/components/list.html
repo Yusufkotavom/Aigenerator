@@ -1,0 +1,86 @@
+{% macro render_list(items, style='simple', numbered=false, columns=1) %}
+{% if style == 'simple' %}
+    <{{ 'ol' if numbered else 'ul' }} class="list-group list-group-flush">
+    {% for item in items %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="ms-2 me-auto">
+                <div class="fw-bold">{{ item.title | default(item.name) | default(item) }}</div>
+                {% if item.description %}
+                <p class="mb-1">{{ item.description | truncate_words(20) }}</p>
+                {% endif %}
+            </div>
+            {% if item.badge or item.count %}
+            <span class="badge bg-primary rounded-pill">{{ item.badge | default(item.count) }}</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </{{ 'ol' if numbered else 'ul' }}>
+
+{% elif style == 'cards' %}
+    <div class="row">
+    {% for item in items %}
+        <div class="col-md-{{ 12 // columns }} mb-3">
+            <div class="card h-100">
+                {% if item.image %}
+                <img src="{{ item.image | safe_url }}" class="card-img-top" alt="{{ item.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h6 class="card-title">{{ item.title | default(item.name) | default(item) }}</h6>
+                    {% if item.description %}
+                    <p class="card-text small">{{ item.description | truncate_words(15) }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+{% elif style == 'inline' %}
+    <div class="d-flex flex-wrap gap-2">
+    {% for item in items %}
+        <span class="badge bg-secondary p-2">
+            {{ item.title | default(item.name) | default(item) }}
+        </span>
+    {% endfor %}
+    </div>
+
+{% elif style == 'timeline' %}
+    <div class="timeline">
+    {% for item in items %}
+        <div class="timeline-item mb-4">
+            <div class="timeline-marker bg-primary"></div>
+            <div class="timeline-content">
+                <h6>{{ item.title | default(item.name) | default(item) }}</h6>
+                {% if item.date %}
+                <small class="text-muted">{{ item.date }}</small>
+                {% endif %}
+                {% if item.description %}
+                <p class="mt-2">{{ item.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    <style>
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline-item { position: relative; }
+    .timeline-marker { 
+        position: absolute; 
+        left: -2rem; 
+        width: 12px; 
+        height: 12px; 
+        border-radius: 50%; 
+        top: 5px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    </style>
+{% endif %}
+{% endmacro %}

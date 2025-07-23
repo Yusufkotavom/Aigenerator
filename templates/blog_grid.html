@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "components/card.html" import render_card %}
+
+{% block title %}{{ title | default('Blog Grid') }}{% endblock %}
+
+{% block header_class %}gradient-bg text-white{% endblock %}
+{% block header_text_class %}py-5 mb-0 text-shadow{% endblock %}
+
+{% block content %}
+<div class="row">
+    {% if featured_post %}
+    <div class="col-12 mb-5">
+        <div class="card bg-dark text-white">
+            {% if featured_post.image %}
+            <img src="{{ featured_post.image | safe_url }}" class="card-img" alt="{{ featured_post.title }}">
+            <div class="card-img-overlay d-flex align-items-end">
+            {% else %}
+            <div class="card-body">
+            {% endif %}
+                <div class="w-100">
+                    <span class="badge bg-danger mb-2">Featured</span>
+                    <h2 class="card-title">{{ featured_post.title }}</h2>
+                    <p class="card-text">{{ featured_post.description | truncate_words(40) }}</p>
+                    <small class="text-muted">{{ featured_post.date }} | {{ featured_post.author }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% for item in items %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        {{ render_card(item, variant='hover') }}
+    </div>
+    {% endfor %}
+    
+    {% if not items %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <h3 class="text-muted">Tidak ada konten tersedia</h3>
+            <p>Silakan tambahkan data melalui CSV, JSON, atau AI input.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if pagination %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ pagination.prev }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for page in pagination.pages %}
+        <li class="page-item {% if page.current %}active{% endif %}">
+            <a class="page-link" href="{{ page.url }}">{{ page.number }}</a>
+        </li>
+        {% endfor %}
+        
+        {% if pagination.next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ pagination.next }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

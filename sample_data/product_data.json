@@ -1,0 +1,91 @@
+{
+  "title": "Katalog Produk Electronics",
+  "categories": ["Smartphone", "Laptop", "Headphone", "Smartwatch"],
+  "brands": ["Apple", "Samsung", "Sony", "Dell"],
+  "items": [
+    {
+      "title": "iPhone 15 Pro Max",
+      "description": "Smartphone flagship terbaru dengan chip A17 Pro dan kamera canggih",
+      "price": 18999000,
+      "original_price": 19999000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Apple",
+      "category": "Smartphone",
+      "rating": 5,
+      "reviews": "1250",
+      "discount": 5,
+      "new": true,
+      "specifications": "128GB, A17 Pro, Triple Camera",
+      "buy_url": "https://example.com/buy/iphone15",
+      "detail_url": "https://example.com/product/iphone15"
+    },
+    {
+      "title": "Samsung Galaxy S24 Ultra",
+      "description": "Smartphone Android premium dengan S Pen dan kamera 200MP",
+      "price": 16999000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Samsung",
+      "category": "Smartphone",
+      "rating": 4,
+      "reviews": "890",
+      "specifications": "256GB, Snapdragon 8 Gen 3, Quad Camera",
+      "buy_url": "https://example.com/buy/galaxy-s24",
+      "detail_url": "https://example.com/product/galaxy-s24"
+    },
+    {
+      "title": "MacBook Air M3",
+      "description": "Laptop ultra-thin dengan performa tinggi dan battery life luar biasa",
+      "price": 23999000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Apple",
+      "category": "Laptop",
+      "rating": 5,
+      "reviews": "567",
+      "specifications": "13-inch, M3 Chip, 8GB RAM, 256GB SSD",
+      "buy_url": "https://example.com/buy/macbook-air-m3",
+      "detail_url": "https://example.com/product/macbook-air-m3"
+    },
+    {
+      "title": "Sony WH-1000XM5",
+      "description": "Headphone noise-cancelling terbaik dengan kualitas audio premium",
+      "price": 4999000,
+      "original_price": 5499000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Sony",
+      "category": "Headphone",
+      "rating": 5,
+      "reviews": "2340",
+      "discount": 10,
+      "specifications": "Wireless, 30hr Battery, ANC",
+      "buy_url": "https://example.com/buy/sony-wh1000xm5",
+      "detail_url": "https://example.com/product/sony-wh1000xm5"
+    },
+    {
+      "title": "Dell XPS 13",
+      "description": "Laptop premium dengan layar InfinityEdge dan performa tinggi",
+      "price": 18999000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Dell",
+      "category": "Laptop",
+      "rating": 4,
+      "reviews": "445",
+      "specifications": "13.3-inch, Intel i7, 16GB RAM, 512GB SSD",
+      "buy_url": "https://example.com/buy/dell-xps13",
+      "detail_url": "https://example.com/product/dell-xps13"
+    },
+    {
+      "title": "Apple Watch Ultra 2",
+      "description": "Smartwatch premium untuk aktivitas outdoor dan olahraga ekstrem",
+      "price": 12999000,
+      "image": "https://via.placeholder.com/300x300",
+      "brand": "Apple",
+      "category": "Smartwatch",
+      "rating": 5,
+      "reviews": "789",
+      "new": true,
+      "specifications": "49mm, Titanium, GPS + Cellular",
+      "buy_url": "https://example.com/buy/apple-watch-ultra2",
+      "detail_url": "https://example.com/product/apple-watch-ultra2"
+    }
+  ]
+}
