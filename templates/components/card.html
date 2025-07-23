@@ -1,0 +1,74 @@
+{% macro render_card(item, variant='default', show_image=true, show_buttons=true) %}
+<div class="card {% if variant == 'hover' %}card-hover{% endif %} mb-4 shadow-sm">
+    {% if show_image and (item.image or item.thumbnail) %}
+    <div class="card-img-top">
+        {% if item.image or item.thumbnail %}
+            <img src="{{ (item.image or item.thumbnail) | safe_url }}" 
+                 alt="{{ item.title | default('Image') }}" 
+                 class="img-fluid" 
+                 style="height: 200px; object-fit: cover; width: 100%;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="image-placeholder" style="display: none;">
+                <i class="fas fa-image fa-3x mb-2"></i>
+                <p>Gambar tidak tersedia</p>
+            </div>
+        {% else %}
+            <div class="image-placeholder">
+                <i class="fas fa-image fa-3x mb-2"></i>
+                <p>Gambar tidak tersedia</p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <div class="card-body">
+        {% if item.category %}
+        <span class="badge bg-secondary mb-2">{{ item.category }}</span>
+        {% endif %}
+        
+        <h5 class="card-title">{{ item.title | default('Judul Tidak Tersedia') }}</h5>
+        
+        {% if item.description %}
+        <p class="card-text">{{ item.description | truncate_words(30) }}</p>
+        {% endif %}
+        
+        {% if item.content %}
+        <div class="card-text">
+            {{ item.content | markdown | safe | truncate_words(50) }}
+        </div>
+        {% endif %}
+        
+        {% if item.tags %}
+        <div class="mt-2">
+            {% for tag in item.tags.split(',') if item.tags %}
+            <span class="badge bg-outline-primary me-1">{{ tag.strip() }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% if item.author or item.date %}
+        <div class="text-muted small mt-2">
+            {% if item.author %}By: {{ item.author }}{% endif %}
+            {% if item.date %} | {{ item.date }}{% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if show_buttons %}
+    <div class="card-footer bg-transparent">
+        <div class="btn-group w-100">
+            {% if item.url or item.link %}
+            <a href="{{ (item.url or item.link) | safe_url }}" class="btn btn-primary">
+                Baca Selengkapnya
+            </a>
+            {% endif %}
+            {% if item.download_url %}
+            <a href="{{ item.download_url | safe_url }}" class="btn btn-outline-secondary">
+                Download
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

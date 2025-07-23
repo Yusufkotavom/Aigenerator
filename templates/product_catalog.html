@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% from "components/card.html" import render_card %}
+
+{% block title %}{{ title | default('Katalog Produk') }}{% endblock %}
+
+{% block extra_css %}
+.price-tag { font-size: 1.2rem; font-weight: bold; color: #28a745; }
+.discount-badge { background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; }
+.rating { color: #ffc107; }
+.product-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+{% endblock %}
+
+{% block content %}
+<!-- Filter Bar -->
+{% if categories or brands %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    {% if categories %}
+                    <div class="col-md-6">
+                        <label class="form-label">Kategori:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for category in categories %}
+                            <span class="badge bg-outline-primary">{{ category }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if brands %}
+                    <div class="col-md-6">
+                        <label class="form-label">Brand:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for brand in brands %}
+                            <span class="badge bg-outline-secondary">{{ brand }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Products Grid -->
+<div class="row">
+    {% for item in items %}
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+        <div class="card product-card h-100">
+            <!-- Product Image -->
+            <div class="position-relative">
+                {% if item.image or item.thumbnail %}
+                <img src="{{ (item.image or item.thumbnail) | safe_url }}" 
+                     class="card-img-top" 
+                     alt="{{ item.title or item.name }}"
+                     style="height: 250px; object-fit: cover;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="image-placeholder" style="display: none; height: 250px;">
+                    <i class="fas fa-box fa-3x mb-2"></i>
+                    <p>Produk</p>
+                </div>
+                {% else %}
+                <div class="image-placeholder" style="height: 250px;">
+                    <i class="fas fa-box fa-3x mb-2"></i>
+                    <p>Produk</p>
+                </div>
+                {% endif %}
+                
+                <!-- Badges -->
+                {% if item.discount or item.sale %}
+                <span class="position-absolute top-0 start-0 m-2 discount-badge">
+                    {% if item.discount %}{{ item.discount }}% OFF{% else %}SALE{% endif %}
+                </span>
+                {% endif %}
+                
+                {% if item.new or item.is_new %}
+                <span class="position-absolute top-0 end-0 m-2 badge bg-success">NEW</span>
+                {% endif %}
+            </div>
+            
+            <!-- Product Info -->
+            <div class="card-body">
+                {% if item.brand %}
+                <small class="text-muted">{{ item.brand }}</small>
+                {% endif %}
+                
+                <h6 class="card-title">{{ item.title or item.name or 'Produk' }}</h6>
+                
+                {% if item.description %}
+                <p class="card-text small text-muted">{{ item.description | truncate_words(20) }}</p>
+                {% endif %}
+                
+                <!-- Rating -->
+                {% if item.rating %}
+                <div class="rating mb-2">
+                    {% for i in range(5) %}
+                        {% if i < (item.rating | int) %}
+                        <i class="fas fa-star"></i>
+                        {% else %}
+                        <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <small class="text-muted ms-1">({{ item.reviews | default('0') }})</small>
+                </div>
+                {% endif %}
+                
+                <!-- Price -->
+                <div class="price-section">
+                    {% if item.original_price and item.price != item.original_price %}
+                    <small class="text-muted text-decoration-line-through">
+                        Rp {{ "{:,.0f}".format(item.original_price | float) }}
+                    </small>
+                    {% endif %}
+                    
+                    <div class="price-tag">
+                        Rp {{ "{:,.0f}".format(item.price | float | default(0)) }}
+                    </div>
+                </div>
+                
+                <!-- Specifications -->
+                {% if item.specifications or item.specs %}
+                <div class="mt-2">
+                    <small class="text-muted">
+                        {% set specs = item.specifications or item.specs %}
+                        {% if specs is string %}
+                            {{ specs | truncate_words(10) }}
+                        {% else %}
+                            {% for key, value in specs.items() %}
+                                {{ key }}: {{ value }}{% if not loop.last %} | {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="card-footer bg-transparent">
+                <div class="btn-group w-100">
+                    {% if item.buy_url or item.shop_url %}
+                    <a href="{{ (item.buy_url or item.shop_url) | safe_url }}" class="btn btn-success">
+                        <i class="fas fa-shopping-cart"></i> Beli
+                    </a>
+                    {% endif %}
+                    
+                    {% if item.detail_url or item.url %}
+                    <a href="{{ (item.detail_url or item.url) | safe_url }}" class="btn btn-outline-primary">
+                        Detail
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not items %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <h3 class="text-muted">Tidak ada produk tersedia</h3>
+            <p>Silakan tambahkan data produk melalui CSV, JSON, atau AI input.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add to wishlist functionality (placeholder)
+function addToWishlist(productId) {
+    console.log('Added to wishlist:', productId);
+    // Implement wishlist logic here
+}
+
+// Add to cart functionality (placeholder)
+function addToCart(productId) {
+    console.log('Added to cart:', productId);
+    // Implement cart logic here
+}
+</script>
+{% endblock %}

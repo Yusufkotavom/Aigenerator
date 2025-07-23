@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title | default('Testimonial') }}{% endblock %}
+
+{% block header_class %}gradient-bg text-white{% endblock %}
+{% block header_text_class %}py-5 mb-0 text-shadow{% endblock %}
+
+{% block extra_css %}
+.testimonial-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.testimonial-avatar { width: 80px; height: 80px; object-fit: cover; border: 4px solid white; }
+.star-rating { color: #ffc107; }
+.quote-icon { font-size: 3rem; color: #e9ecef; opacity: 0.5; }
+.testimonial-slider .carousel-item { padding: 2rem 0; }
+.testimonial-grid .col-md-4 { margin-bottom: 2rem; }
+.company-logo { max-height: 40px; filter: grayscale(100%); opacity: 0.7; }
+.company-logo:hover { filter: none; opacity: 1; }
+{% endblock %}
+
+{% block content %}
+<!-- Featured Testimonial Carousel -->
+{% if featured_testimonials or items[:3] %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div id="testimonialCarousel" class="carousel slide testimonial-slider" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for item in (featured_testimonials or items[:3]) %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8">
+                                <div class="testimonial-card p-5 text-center">
+                                    <div class="quote-icon mb-3">❝</div>
+                                    
+                                    <blockquote class="blockquote mb-4">
+                                        <p class="lead">{{ item.content or item.testimonial or item.review }}</p>
+                                    </blockquote>
+                                    
+                                    {% if item.rating %}
+                                    <div class="star-rating mb-3">
+                                        {% for i in range(5) %}
+                                            {% if i < (item.rating | int) %}
+                                            <i class="fas fa-star"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        {% if item.avatar or item.photo %}
+                                        <img src="{{ (item.avatar or item.photo) | safe_url }}" 
+                                             alt="{{ item.name or item.author }}" 
+                                             class="testimonial-avatar rounded-circle me-3">
+                                        {% else %}
+                                        <div class="testimonial-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="text-start">
+                                            <h6 class="mb-0">{{ item.name or item.author or 'Anonymous' }}</h6>
+                                            <small class="text-muted">
+                                                {{ item.title or item.position }}
+                                                {% if item.company %} • {{ item.company }}{% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistics -->
+{% if stats %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ stats.total_reviews | default('100+') }}</h3>
+                        <p class="mb-0">Total Review</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ stats.average_rating | default('4.8') }}</h3>
+                        <p class="mb-0">Rating Rata-rata</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">{{ stats.five_star_percentage | default('95%') }}</h3>
+                        <p class="mb-0">5 Bintang</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">{{ stats.satisfied_customers | default('500+') }}</h3>
+                        <p class="mb-0">Pelanggan Puas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Testimonial Grid -->
+<div class="row testimonial-grid">
+    {% for item in items %}
+    <div class="col-lg-4 col-md-6">
+        <div class="card testimonial-card h-100">
+            <div class="card-body">
+                {% if item.rating %}
+                <div class="star-rating mb-3">
+                    {% for i in range(5) %}
+                        {% if i < (item.rating | int) %}
+                        <i class="fas fa-star"></i>
+                        {% else %}
+                        <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <blockquote class="blockquote">
+                    <p>{{ item.content or item.testimonial or item.review }}</p>
+                </blockquote>
+                
+                {% if item.pros or item.advantages %}
+                <div class="mb-3">
+                    <strong class="text-success">Yang disukai:</strong>
+                    <ul class="list-unstyled small">
+                        {% for pro in (item.pros or item.advantages).split(',') if item.pros or item.advantages %}
+                        <li><i class="fas fa-check text-success me-1"></i> {{ pro.strip() }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% if item.cons or item.improvements %}
+                <div class="mb-3">
+                    <strong class="text-warning">Saran perbaikan:</strong>
+                    <ul class="list-unstyled small">
+                        {% for con in (item.cons or item.improvements).split(',') if item.cons or item.improvements %}
+                        <li><i class="fas fa-minus text-warning me-1"></i> {{ con.strip() }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex align-items-center">
+                    {% if item.avatar or item.photo %}
+                    <img src="{{ (item.avatar or item.photo) | safe_url }}" 
+                         alt="{{ item.name or item.author }}" 
+                         class="rounded-circle me-3" 
+                         style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h6 class="mb-0">{{ item.name or item.author or 'Anonymous' }}</h6>
+                        <small class="text-muted">
+                            {{ item.title or item.position }}
+                            {% if item.company %} • {{ item.company }}{% endif %}
+                        </small>
+                        {% if item.date %}
+                        <div class="small text-muted">{{ item.date }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if item.verified %}
+                <div class="mt-2">
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle"></i> Terverifikasi
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not items %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <h3 class="text-muted">Tidak ada testimonial tersedia</h3>
+            <p>Silakan tambahkan data testimonial melalui CSV, JSON, atau AI input.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Company Logos -->
+{% if company_logos %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h4 class="text-center mb-4">Dipercaya oleh perusahaan terkemuka</h4>
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
+            {% for logo in company_logos %}
+            <img src="{{ logo.url | safe_url }}" 
+                 alt="{{ logo.name }}" 
+                 class="company-logo"
+                 title="{{ logo.name }}">
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Call to Action -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body py-5">
+                <h3>Bergabunglah dengan pelanggan yang puas!</h3>
+                <p class="lead">Rasakan pengalaman terbaik bersama kami</p>
+                <a href="{{ cta_url | default('#') | safe_url }}" class="btn btn-light btn-lg">
+                    {{ cta_text | default('Mulai Sekarang') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

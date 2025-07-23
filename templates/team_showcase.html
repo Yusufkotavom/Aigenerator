@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title | default('Tim Kami') }}{% endblock %}
+
+{% block header_class %}bg-info text-white{% endblock %}
+
+{% block extra_css %}
+.team-card { border: none; border-radius: 15px; overflow: hidden; transition: all 0.3s ease; }
+.team-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+.team-photo { width: 100%; height: 250px; object-fit: cover; }
+.team-social { opacity: 0; transform: translateY(20px); transition: all 0.3s ease; }
+.team-card:hover .team-social { opacity: 1; transform: translateY(0); }
+.social-icon { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin: 0.25rem; color: white; text-decoration: none; }
+.social-linkedin { background: #0077b5; }
+.social-twitter { background: #1da1f2; }
+.social-github { background: #333; }
+.social-email { background: #dc3545; }
+.department-filter { margin-bottom: 2rem; }
+.team-stats { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+{% endblock %}
+
+{% block content %}
+<!-- Team Stats -->
+{% if stats %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card team-stats text-white">
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3>{{ stats.total_members | default('50+') }}</h3>
+                        <p class="mb-0">Anggota Tim</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>{{ stats.departments | default('8') }}</h3>
+                        <p class="mb-0">Departemen</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>{{ stats.countries | default('15') }}</h3>
+                        <p class="mb-0">Negara</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3>{{ stats.experience_years | default('10+') }}</h3>
+                        <p class="mb-0">Tahun Pengalaman</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Department Filter -->
+{% if departments %}
+<div class="department-filter text-center">
+    <button class="btn btn-outline-primary filter-btn active" data-filter="all">Semua</button>
+    {% for dept in departments %}
+    <button class="btn btn-outline-primary filter-btn" data-filter="{{ dept.lower().replace(' ', '-') }}">
+        {{ dept }}
+    </button>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Team Members -->
+<div class="row" id="team-grid">
+    {% for item in items %}
+    <div class="col-lg-4 col-md-6 mb-4 team-member" 
+         data-department="{{ (item.department or 'general').lower().replace(' ', '-') }}">
+        <div class="card team-card h-100">
+            <!-- Photo -->
+            {% if item.photo or item.image %}
+            <img src="{{ (item.photo or item.image) | safe_url }}" 
+                 alt="{{ item.name }}" 
+                 class="team-photo">
+            {% else %}
+            <div class="team-photo bg-light d-flex align-items-center justify-content-center">
+                <i class="fas fa-user fa-4x text-muted"></i>
+            </div>
+            {% endif %}
+            
+            <!-- Member Info -->
+            <div class="card-body text-center">
+                <h5 class="card-title">{{ item.name or 'Nama Tidak Tersedia' }}</h5>
+                
+                {% if item.position or item.title %}
+                <p class="text-primary mb-2">{{ item.position or item.title }}</p>
+                {% endif %}
+                
+                {% if item.department %}
+                <span class="badge bg-secondary mb-3">{{ item.department }}</span>
+                {% endif %}
+                
+                {% if item.bio or item.description %}
+                <p class="card-text small">{{ item.bio or item.description | truncate_words(25) }}</p>
+                {% endif %}
+                
+                <!-- Skills -->
+                {% if item.skills %}
+                <div class="mb-3">
+                    {% for skill in item.skills.split(',') if item.skills %}
+                    <span class="badge bg-light text-dark me-1">{{ skill.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Experience -->
+                {% if item.experience or item.years_experience %}
+                <div class="small text-muted mb-3">
+                    <i class="fas fa-briefcase me-1"></i>
+                    {{ item.experience or item.years_experience }} pengalaman
+                </div>
+                {% endif %}
+                
+                <!-- Location -->
+                {% if item.location or item.city %}
+                <div class="small text-muted mb-3">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ item.location or item.city }}
+                </div>
+                {% endif %}
+                
+                <!-- Social Links -->
+                <div class="team-social">
+                    {% if item.linkedin %}
+                    <a href="{{ item.linkedin | safe_url }}" class="social-icon social-linkedin" target="_blank">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if item.twitter %}
+                    <a href="{{ item.twitter | safe_url }}" class="social-icon social-twitter" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if item.github %}
+                    <a href="{{ item.github | safe_url }}" class="social-icon social-github" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if item.email %}
+                    <a href="mailto:{{ item.email }}" class="social-icon social-email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Additional Info -->
+            {% if item.achievements or item.certifications %}
+            <div class="card-footer bg-light">
+                {% if item.achievements %}
+                <div class="mb-2">
+                    <strong class="small">Pencapaian:</strong>
+                    <div class="small">{{ item.achievements | truncate_words(15) }}</div>
+                </div>
+                {% endif %}
+                
+                {% if item.certifications %}
+                <div>
+                    <strong class="small">Sertifikasi:</strong>
+                    <div class="small">{{ item.certifications | truncate_words(10) }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not items %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <h3 class="text-muted">Tidak ada anggota tim tersedia</h3>
+            <p>Silakan tambahkan data tim melalui CSV, JSON, atau AI input.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Leadership Section -->
+{% if leadership %}
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="text-center mb-4">Kepemimpinan</h3>
+    </div>
+</div>
+<div class="row">
+    {% for leader in leadership %}
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    {% if leader.photo %}
+                    <img src="{{ leader.photo | safe_url }}" 
+                         alt="{{ leader.name }}" 
+                         class="img-fluid rounded-start h-100" 
+                         style="object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light h-100 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-user fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ leader.name }}</h5>
+                        <p class="text-primary">{{ leader.position }}</p>
+                        <p class="card-text">{{ leader.bio | truncate_words(30) }}</p>
+                        {% if leader.quote %}
+                        <blockquote class="blockquote">
+                            <p class="small">"{{ leader.quote }}"</p>
+                        </blockquote>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Join Team CTA -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-primary text-white text-center">
+            <div class="card-body py-5">
+                <h3>Bergabung dengan Tim Kami!</h3>
+                <p class="lead">Kami selalu mencari talenta terbaik untuk bergabung</p>
+                <a href="{{ careers_url | default('#') | safe_url }}" class="btn btn-light btn-lg">
+                    Lihat Lowongan
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Department filtering
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        const members = document.querySelectorAll('.team-member');
+        
+        members.forEach(member => {
+            if (filter === 'all' || member.getAttribute('data-department') === filter) {
+                member.style.display = 'block';
+            } else {
+                member.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Add hover effects
+document.querySelectorAll('.team-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
+});
+</script>
+{% endblock %}
