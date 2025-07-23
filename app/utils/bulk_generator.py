@@ -6,7 +6,6 @@ import json
 import os
 import zipfile
 from typing import List, Dict, Any, Optional
-import pandas as pd
 from datetime import datetime
 import asyncio
 import concurrent.futures
@@ -59,7 +58,13 @@ class BulkContentGenerator:
             return {
                 'success': True,
                 'data': rows,
-                'template': template,
+                'template': {
+                    'id': template.id,
+                    'name': template.name,
+                    'fields': template.fields,
+                    'category': template.category,
+                    'industry': template.industry
+                },
                 'row_count': len(rows),
                 'preview': rows[:3]  # First 3 rows for preview
             }
