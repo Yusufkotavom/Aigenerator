@@ -1,0 +1,77 @@
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="fixed top-20 right-4 z-40 space-y-2" x-data="{ show: true }">
+            {% for category, message in messages %}
+                <div x-show="show" 
+                     x-transition:enter="transform ease-out duration-300 transition"
+                     x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+                     x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="flash-message flash-{{ category }}">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle text-green-400"></i>
+                            {% elif category == 'error' %}
+                                <i class="fas fa-exclamation-circle text-red-400"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle text-blue-400"></i>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium">{{ message }}</p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <button @click="show = false" 
+                                    class="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Auto-hide flash messages after 5 seconds -->
+        <script>
+            setTimeout(() => {
+                const flashMessages = document.querySelectorAll('.flash-message');
+                flashMessages.forEach(message => {
+                    message.style.opacity = '0';
+                    setTimeout(() => message.remove(), 300);
+                });
+            }, 5000);
+        </script>
+    {% endif %}
+{% endwith %}
+
+<style>
+.flash-message {
+    @apply max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden;
+}
+
+.flash-success {
+    @apply bg-green-50 border-l-4 border-green-400;
+}
+
+.flash-error {
+    @apply bg-red-50 border-l-4 border-red-400;
+}
+
+.flash-warning {
+    @apply bg-yellow-50 border-l-4 border-yellow-400;
+}
+
+.flash-info {
+    @apply bg-blue-50 border-l-4 border-blue-400;
+}
+
+.flash-message p {
+    @apply text-gray-900;
+}
+</style>

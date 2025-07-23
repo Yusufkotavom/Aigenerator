@@ -1,0 +1,455 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}AI Generator{% endblock %}
+
+{% block head %}
+<style>
+.model-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.model-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.model-card:hover::before {
+    left: 100%;
+}
+
+.generator-form {
+    position: sticky;
+    top: 100px;
+}
+
+@media (max-width: 1024px) {
+    .generator-form {
+        position: static;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-8" x-data="aiGenerator()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">AI Generator</h1>
+            <p class="text-gray-400">Generate konten AI dengan berbagai model dan template</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Panel - Generator Form -->
+            <div class="lg:col-span-2 generator-form">
+                <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 space-y-6">
+                    
+                    <!-- Model Selection -->
+                    <div>
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-brain mr-3 text-purple-400"></i>
+                            Pilih Model AI
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for model in models %}
+                            <div @click="selectedModel = '{{ model.id }}'" 
+                                 :class="selectedModel === '{{ model.id }}' ? 'bg-purple-500/30 border-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'"
+                                 class="model-card p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="{{ model.color }} p-2 rounded-lg">
+                                        <i class="{{ model.icon }} text-white"></i>
+                                    </div>
+                                    <span x-show="selectedModel === '{{ model.id }}'" class="text-purple-400">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                </div>
+                                <h3 class="font-semibold text-white">{{ model.name }}</h3>
+                                <p class="text-sm text-gray-300 mt-1">{{ model.description }}</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
+                                        Free Tier
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Template Selection -->
+                    <div>
+                        <h2 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-file-alt mr-3 text-blue-400"></i>
+                            Template Prompts
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {% for template in templates %}
+                            <button @click="loadTemplate('{{ template.id }}')"
+                                    class="text-left p-3 bg-white/5 hover:bg-purple-500/20 rounded-lg border border-white/10 hover:border-purple-400 transition-all duration-300">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-medium text-white">{{ template.name }}</span>
+                                    <span class="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+                                        {{ template.category }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-400">{{ template.description }}</p>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Prompt Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-pen-fancy mr-2"></i>
+                            Prompt Anda
+                        </label>
+                        <textarea x-model="prompt" 
+                                  placeholder="Masukkan prompt Anda di sini atau pilih template di atas..."
+                                  class="w-full h-32 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                  rows="6"></textarea>
+                        <div class="flex items-center justify-between mt-2 text-sm text-gray-400">
+                            <span x-text="`${prompt.length} karakter`"></span>
+                            <button @click="prompt = ''" class="hover:text-white transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-sliders-h mr-2 text-yellow-400"></i>
+                            Parameter Settings
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Temperature: <span x-text="settings.temperature"></span>
+                                </label>
+                                <input type="range" x-model="settings.temperature" 
+                                       min="0" max="1" step="0.1"
+                                       class="w-full accent-purple-500">
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>Conservative</span>
+                                    <span>Creative</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Max Tokens: <span x-text="settings.maxTokens"></span>
+                                </label>
+                                <input type="range" x-model="settings.maxTokens" 
+                                       min="50" max="2000" step="50"
+                                       class="w-full accent-purple-500">
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>Short</span>
+                                    <span>Long</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    Top P: <span x-text="settings.topP"></span>
+                                </label>
+                                <input type="range" x-model="settings.topP" 
+                                       min="0" max="1" step="0.1"
+                                       class="w-full accent-purple-500">
+                                <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                    <span>Focused</span>
+                                    <span>Diverse</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Key Input (Optional) -->
+                    <div x-show="showApiKeyInput" x-transition>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            <i class="fas fa-key mr-2"></i>
+                            API Key (Optional)
+                        </label>
+                        <input x-model="apiKey" 
+                               type="password" 
+                               placeholder="Masukkan API key untuk akses real AI..."
+                               class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <p class="text-xs text-gray-400 mt-1">
+                            Kosongkan untuk menggunakan demo mode. 
+                            <a href="{{ url_for('main.help_page') }}" class="text-purple-400 hover:text-purple-300">Cara mendapatkan API key</a>
+                        </p>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button @click="generateResponse()" 
+                            :disabled="!prompt.trim() || isLoading"
+                            :class="isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-purple-500/25'"
+                            class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center">
+                        <template x-if="isLoading">
+                            <div class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Generating...
+                            </div>
+                        </template>
+                        <template x-if="!isLoading">
+                            <div class="flex items-center">
+                                <i class="fas fa-magic mr-2"></i>
+                                Generate AI Response
+                            </div>
+                        </template>
+                    </button>
+
+                    <!-- Toggle API Key Input -->
+                    <div class="text-center">
+                        <button @click="showApiKeyInput = !showApiKeyInput" 
+                                class="text-sm text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-cog mr-1"></i>
+                            <span x-text="showApiKeyInput ? 'Hide API Settings' : 'Show API Settings'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Response & Info -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Response Output -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-robot mr-3 text-green-400"></i>
+                        AI Response
+                    </h2>
+                    
+                    <div x-show="!response && !isLoading" class="text-center py-8">
+                        <i class="fas fa-comment-dots text-4xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-400">Response akan muncul di sini</p>
+                    </div>
+
+                    <div x-show="isLoading" class="text-center py-8">
+                        <div class="animate-pulse-slow">
+                            <i class="fas fa-brain text-4xl text-purple-400 mb-4"></i>
+                        </div>
+                        <p class="text-purple-300">AI sedang berpikir...</p>
+                    </div>
+
+                    <div x-show="response" class="space-y-4">
+                        <div class="bg-black/20 rounded-xl p-4 border border-white/10">
+                            <pre class="text-white whitespace-pre-wrap text-sm" x-text="response"></pre>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button @click="copyToClipboard(response)"
+                                    class="flex-1 bg-blue-500/20 text-blue-300 py-2 px-4 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center justify-center">
+                                <i class="fas fa-copy mr-2"></i>
+                                Copy
+                            </button>
+                            <button @click="response = ''"
+                                    class="flex-1 bg-red-500/20 text-red-300 py-2 px-4 rounded-lg hover:bg-red-500/30 transition-colors flex items-center justify-center">
+                                <i class="fas fa-trash mr-2"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Info -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                        <i class="fas fa-info-circle mr-2 text-blue-400"></i>
+                        Model Info
+                    </h3>
+                    {% for model in models %}
+                    <div x-show="selectedModel === '{{ model.id }}'" class="space-y-2">
+                        <p class="text-sm text-gray-300">
+                            <span class="font-medium">Provider:</span> {{ model.provider }}
+                        </p>
+                        <p class="text-sm text-gray-300">
+                            <span class="font-medium">Type:</span> {{ model.type }}
+                        </p>
+                        <p class="text-sm text-gray-300">
+                            <span class="font-medium">Limit:</span> {{ model.rate_limit }}
+                        </p>
+                        {% if model.context_length %}
+                        <p class="text-sm text-gray-300">
+                            <span class="font-medium">Context:</span> {{ model.context_length }} tokens
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                    <h3 class="text-lg font-semibold mb-3">Quick Actions</h3>
+                    <div class="space-y-2">
+                        <a href="{{ url_for('main.templates') }}" 
+                           class="block w-full text-left bg-purple-500/20 text-purple-300 py-2 px-4 rounded-lg hover:bg-purple-500/30 transition-colors">
+                            <i class="fas fa-file-alt mr-2"></i>
+                            Browse Templates
+                        </a>
+                        <a href="{{ url_for('main.models') }}" 
+                           class="block w-full text-left bg-blue-500/20 text-blue-300 py-2 px-4 rounded-lg hover:bg-blue-500/30 transition-colors">
+                            <i class="fas fa-brain mr-2"></i>
+                            View All Models
+                        </a>
+                        <a href="{{ url_for('main.help_page') }}" 
+                           class="block w-full text-left bg-green-500/20 text-green-300 py-2 px-4 rounded-lg hover:bg-green-500/30 transition-colors">
+                            <i class="fas fa-question-circle mr-2"></i>
+                            Help & Guide
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div x-show="showToast" 
+         x-transition
+         class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <span x-text="toastMessage"></span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function aiGenerator() {
+    return {
+        // State
+        selectedModel: '{{ selected_model.id if selected_model else "groq-llama" }}',
+        prompt: '',
+        response: '',
+        isLoading: false,
+        showToast: false,
+        toastMessage: '',
+        showApiKeyInput: false,
+        apiKey: '',
+        
+        // Settings
+        settings: {
+            temperature: 0.7,
+            maxTokens: 500,
+            topP: 0.9
+        },
+
+        // Templates data
+        templates: {{ templates | map(attribute='to_dict') | list | tojson }},
+
+        // Initialize
+        init() {
+            // Load saved settings
+            const savedSettings = localStorage.getItem('aiSettings');
+            if (savedSettings) {
+                this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
+            }
+            
+            // Load selected model
+            const savedModel = localStorage.getItem('selectedModel');
+            if (savedModel) {
+                this.selectedModel = savedModel;
+            }
+
+            // Watch for changes
+            this.$watch('selectedModel', value => {
+                localStorage.setItem('selectedModel', value);
+            });
+
+            this.$watch('settings', value => {
+                localStorage.setItem('aiSettings', JSON.stringify(value));
+            }, { deep: true });
+        },
+
+        // Load template
+        loadTemplate(templateId) {
+            const template = this.templates.find(t => t.id === templateId);
+            if (template) {
+                this.prompt = template.prompt;
+                this.showToastMessage(`Template "${template.name}" loaded!`);
+            }
+        },
+
+        // Generate AI response
+        async generateResponse() {
+            if (!this.prompt.trim()) return;
+
+            this.isLoading = true;
+            this.response = '';
+
+            try {
+                const requestData = {
+                    prompt: this.prompt,
+                    model_id: this.selectedModel,
+                    temperature: this.settings.temperature,
+                    max_tokens: this.settings.maxTokens,
+                    top_p: this.settings.topP
+                };
+
+                if (this.apiKey.trim()) {
+                    requestData.api_key = this.apiKey;
+                }
+
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    this.response = result.response;
+                    this.showToastMessage('Response generated successfully!');
+                } else {
+                    this.response = `Error: ${result.error}`;
+                    this.showToastMessage('Error generating response', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                this.response = `Network Error: ${error.message}`;
+                this.showToastMessage('Network error occurred', 'error');
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // Copy to clipboard
+        async copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                this.showToastMessage('Copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                this.showToastMessage('Copied to clipboard!');
+            }
+        },
+
+        // Show toast message
+        showToastMessage(message, type = 'success') {
+            this.toastMessage = message;
+            this.showToast = true;
+            setTimeout(() => {
+                this.showToast = false;
+            }, 3000);
+        }
+    }
+}
+</script>
+{% endblock %}

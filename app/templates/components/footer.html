@@ -1,0 +1,102 @@
+<!-- Footer -->
+<footer class="bg-black/20 border-t border-white/10 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Brand & Description -->
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <span class="ml-2 text-lg font-semibold">AI Generator</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    Platform AI Generator modern dengan dukungan berbagai model AI gratis. 
+                    Buat konten berkualitas dengan mudah dan cepat.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold">Quick Links</h3>
+                <ul class="space-y-2 text-sm">
+                    <li>
+                        <a href="{{ url_for('main.generator') }}" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-magic mr-2"></i>AI Generator
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.templates') }}" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-file-alt mr-2"></i>Template Library
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.models') }}" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-brain mr-2"></i>AI Models
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.help_page') }}" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fas fa-question-circle mr-2"></i>Help & FAQ
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- AI Providers -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold">Supported AI Providers</h3>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="flex items-center text-gray-400">
+                        <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                        Groq
+                    </div>
+                    <div class="flex items-center text-gray-400">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                        HuggingFace
+                    </div>
+                    <div class="flex items-center text-gray-400">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                        OpenAI
+                    </div>
+                    <div class="flex items-center text-gray-400">
+                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        Cohere
+                    </div>
+                </div>
+                
+                <!-- Status -->
+                <div class="pt-2">
+                    <div class="flex items-center text-green-400 text-sm">
+                        <i class="fas fa-circle text-xs mr-2 animate-pulse"></i>
+                        All systems operational
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center">
+            <div class="text-gray-400 text-sm">
+                © {{ moment().year }} AI Generator. Made with ❤️ in Indonesia.
+            </div>
+            <div class="flex space-x-6 text-sm text-gray-400 mt-4 sm:mt-0">
+                <a href="{{ url_for('main.about') }}" class="hover:text-white transition-colors">About</a>
+                <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms</a>
+                <a href="#" class="hover:text-white transition-colors">Support</a>
+            </div>
+        </div>
+    </div>
+</footer>
